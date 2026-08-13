@@ -371,15 +371,15 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Automated
 
-- [ ] 2.1 Build przechodzi: `npm run build`
-- [ ] 2.2 Lint przechodzi: `npm run lint`
+- [x] 2.1 Build przechodzi: `npm run build`
+- [x] 2.2 Lint przechodzi: `npm run lint`
 
 #### Manual
 
-- [ ] 2.3 Logowanie na konto z seedu działa i ustawia cookie httpOnly
-- [ ] 2.4 Błędny email i błędne hasło dają ten sam generyczny komunikat
-- [ ] 2.5 `/contacts/new` bez sesji przekierowuje na `/login`
-- [ ] 2.6 Wylogowanie czyści sesję
+- [x] 2.3 Logowanie na konto z seedu działa i ustawia cookie httpOnly
+- [x] 2.4 Błędny email i błędne hasło dają ten sam generyczny komunikat
+- [x] 2.5 `/contacts/new` bez sesji przekierowuje na `/login`
+- [x] 2.6 Wylogowanie czyści sesję
 
 ### Phase 3: CRUD kontaktów
 
