@@ -385,22 +385,22 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Automated
 
-- [x] 3.1 Build przechodzi: `npm run build`
-- [x] 3.2 Lint przechodzi: `npm run lint`
+- [x] 3.1 Build przechodzi: `npm run build` — fe5c085
+- [x] 3.2 Lint przechodzi: `npm run lint` — fe5c085
 
 #### Manual
 
-- [x] 3.3 Anonimowo: lista i szczegóły widoczne, hasło nigdzie nie występuje, brak przycisków mutacji
-- [x] 3.4 Zalogowany: pełny CRUD działa, warunkowe pole podkategorii dla 3 kategorii
-- [x] 3.5 Duplikat emaila / słabe hasło / niespójna podkategoria → polskie błędy przy polach
-- [x] 3.6 Nowo dodany kontakt może się zalogować; edycja hasła zmienia poświadczenia
+- [x] 3.3 Anonimowo: lista i szczegóły widoczne, hasło nigdzie nie występuje, brak przycisków mutacji — fe5c085
+- [x] 3.4 Zalogowany: pełny CRUD działa, warunkowe pole podkategorii dla 3 kategorii — fe5c085
+- [x] 3.5 Duplikat emaila / słabe hasło / niespójna podkategoria → polskie błędy przy polach — fe5c085
+- [x] 3.6 Nowo dodany kontakt może się zalogować; edycja hasła zmienia poświadczenia — fe5c085
 
 ### Phase 4: Testy + hardening bezpieczeństwa
 
 #### Automated
 
-- [ ] 4.1 Testy przechodzą: `npm test`
-- [ ] 4.2 Build i lint przechodzą: `npm run build && npm run lint`
+- [x] 4.1 Testy przechodzą: `npm test`
+- [x] 4.2 Build i lint przechodzą: `npm run build && npm run lint`
 
 #### Manual
 
