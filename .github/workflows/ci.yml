@@ -26,6 +26,9 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Generate Next.js route types
+        run: yarn next typegen
+
       - name: Type check
         run: yarn tsc --noEmit
 
