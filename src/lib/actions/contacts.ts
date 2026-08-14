@@ -6,11 +6,13 @@ import {
   deleteContact,
   insertContact,
   listCategories,
+  listSubcategories,
   updateContact,
   type ContactWriteValues,
 } from '@/db/queries';
 import { requireAuth } from '@/lib/auth/guard';
 import { hashPassword } from '@/lib/auth/password';
+import { destroySession } from '@/lib/auth/session';
 import {
   contactCreateSchema,
   contactUpdateSchema,
@@ -40,24 +42,47 @@ export interface ContactFormState {
   serial?: number;
 }
 
-/** Postgres error code for unique-constraint violations. */
+/** Postgres error codes surfaced as form errors instead of a crash. */
 const UNIQUE_VIOLATION = '23505';
+const FK_VIOLATION = '23503';
+const CHECK_VIOLATION = '23514';
 
-/** Maps a thrown DB error to a field error, or rethrows. */
+/**
+ * Maps a thrown DB error to a form error. Constraint violations get a
+ * targeted message; anything else is logged server-side and surfaced as a
+ * generic Polish error — a mutation must never end in an unhandled 500.
+ */
 function mapDbError(err: unknown, formData: FormData): ContactFormState {
-  if (
-    err &&
-    typeof err === 'object' &&
-    'code' in err &&
-    (err as { code?: string }).code === UNIQUE_VIOLATION
-  ) {
-    return {
-      errors: { email: ['Kontakt z tym adresem e-mail już istnieje'] },
-      values: echoValues(formData),
-      serial: Date.now(),
-    };
+  const code =
+    err && typeof err === 'object' && 'code' in err
+      ? (err as { code?: string }).code
+      : undefined;
+
+  const errors: Record<string, string[]> =
+    code === UNIQUE_VIOLATION
+      ? { email: ['Kontakt z tym adresem e-mail już istnieje'] }
+      : code === FK_VIOLATION || code === CHECK_VIOLATION
+        ? { form: ['Niespójne dane formularza — odśwież stronę i spróbuj ponownie'] }
+        : { form: ['Wystąpił nieoczekiwany błąd. Spróbuj ponownie.'] };
+
+  if (code !== UNIQUE_VIOLATION) {
+    console.error('Contact mutation failed:', err);
   }
-  throw err;
+
+  return { errors, values: echoValues(formData), serial: Date.now() };
+}
+
+/** Loads the dictionaries the validation schema factories need. */
+async function loadDictionaries() {
+  const categories = await listCategories();
+  const business = categories.find((c) => c.code === 'business');
+  const businessSubcategories = business
+    ? await listSubcategories(business.id)
+    : [];
+  return {
+    categories,
+    businessSubcategoryIds: businessSubcategories.map((s) => s.id),
+  };
 }
 
 /** Extracts the contact fields from FormData in schema-input shape. */
@@ -106,8 +131,9 @@ export async function createContact(
 ): Promise<ContactFormState> {
   await requireAuth();
 
-  const categories = await listCategories();
-  const parsed = contactCreateSchema(categories).safeParse(formValues(formData));
+  const { categories, businessSubcategoryIds } = await loadDictionaries();
+  const parsed = contactCreateSchema(categories, businessSubcategoryIds)
+    .safeParse(formValues(formData));
   if (!parsed.success) {
     return {
       errors: fieldErrors(parsed.error.issues),
@@ -150,8 +176,9 @@ export async function editContact(
 ): Promise<ContactFormState> {
   const session = await requireAuth();
 
-  const categories = await listCategories();
-  const parsed = contactUpdateSchema(categories).safeParse(formValues(formData));
+  const { categories, businessSubcategoryIds } = await loadDictionaries();
+  const parsed = contactUpdateSchema(categories, businessSubcategoryIds)
+    .safeParse(formValues(formData));
   if (!parsed.success) {
     return {
       errors: fieldErrors(parsed.error.issues),
@@ -191,8 +218,13 @@ export async function editContact(
 
 /** Deletes a contact — and with it, its login account. */
 export async function removeContact(id: number): Promise<void> {
-  await requireAuth();
+  const session = await requireAuth();
   await deleteContact(id);
+  // Self-delete: clear the now-dead session cookie immediately instead of
+  // letting the ghost-session guard reject it on every subsequent request.
+  if (session.contactId === id) {
+    await destroySession();
+  }
   revalidatePath('/contacts');
   redirect('/contacts');
 }

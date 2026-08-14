@@ -30,11 +30,20 @@ function failedFields(result: { success: boolean; error?: { issues: { path: Prop
   return result.success ? [] : result.error!.issues.map((i) => String(i.path[0]));
 }
 
+/** Dictionary subcategory ids of the business category (mirrors the seed). */
+const BUSINESS_SUBCATEGORY_IDS = [7, 8];
+
 const create = (overrides: Record<string, unknown>) =>
-  contactCreateSchema(CATEGORIES).safeParse({ ...VALID, ...overrides });
+  contactCreateSchema(CATEGORIES, BUSINESS_SUBCATEGORY_IDS).safeParse({
+    ...VALID,
+    ...overrides,
+  });
 
 const update = (overrides: Record<string, unknown>) =>
-  contactUpdateSchema(CATEGORIES).safeParse({ ...VALID, ...overrides });
+  contactUpdateSchema(CATEGORIES, BUSINESS_SUBCATEGORY_IDS).safeParse({
+    ...VALID,
+    ...overrides,
+  });
 
 describe('password complexity (create)', () => {
   it.each([
@@ -49,6 +58,11 @@ describe('password complexity (create)', () => {
 
   it('accepts a compliant password', () => {
     expect(create({ password: 'Haslo123!' }).success).toBe(true);
+  });
+
+  it('rejects a password longer than 72 characters (bcrypt truncation cap)', () => {
+    const long = 'Aa1!' + 'x'.repeat(70);
+    expect(failedFields(create({ password: long }))).toContain('password');
   });
 });
 
@@ -100,6 +114,12 @@ describe('subcategory rules per category', () => {
   it('rejects an unknown category id', () => {
     expect(failedFields(create({ categoryId: '99' }))).toContain('categoryId');
   });
+
+  it('rejects a subcategory id absent from the dictionary', () => {
+    expect(
+      failedFields(create({ categoryId: '1', subcategoryId: '999999' })),
+    ).toContain('subcategoryId');
+  });
 });
 
 describe('update password semantics', () => {
@@ -123,6 +143,14 @@ describe('remaining field rules', () => {
     expect(failedFields(create({ email: 'not-an-email' }))).toContain('email');
   });
 
+  it('lowercases the email (case-insensitive login identifier)', () => {
+    const result = create({ email: 'Jan.KOWALSKI@Example.COM' });
+    expect(result.success).toBe(true);
+    if (result.success) {
+      expect(result.data.email).toBe('jan.kowalski@example.com');
+    }
+  });
+
   it('rejects a phone with too few digits', () => {
     expect(failedFields(create({ phone: '12 34' }))).toContain('phone');
   });
@@ -135,6 +163,16 @@ describe('remaining field rules', () => {
     expect(failedFields(create({ birthDate: '2999-01-01' }))).toContain(
       'birthDate',
     );
+  });
+
+  it.each([
+    ['a bare year', '2020'],
+    ['a prose date', 'March 5, 1990'],
+    ['non-padded parts', '1990-1-1'],
+    ['an impossible calendar date', '1990-02-30'],
+    ['a pre-1900 year', '1850-01-01'],
+  ])('rejects %s as birth date', (_label, birthDate) => {
+    expect(failedFields(create({ birthDate }))).toContain('birthDate');
   });
 
   it('rejects blank required fields', () => {

@@ -8,15 +8,18 @@ import bcrypt from 'bcryptjs';
  * which passwords ever touch the database.
  */
 
-/** bcrypt cost factor — keep in sync with src/db/seed.ts. */
-const BCRYPT_COST = 12;
+/** bcrypt cost factor — single source of truth, imported by the seed. */
+export const BCRYPT_COST = 12;
 
 /**
- * Pre-computed hash used to equalize login timing when the email does not
- * exist: we still run one bcrypt comparison so attackers cannot distinguish
- * "unknown email" from "wrong password" by response time.
+ * Pre-computed constant hash (bcrypt, cost 12, of a throwaway string) used to
+ * equalize login timing when the email does not exist: we still run one
+ * bcrypt comparison so attackers cannot distinguish "unknown email" from
+ * "wrong password" by response time. A constant instead of hashSync at module
+ * load — computing it here would block the event loop ~230 ms on cold start.
  */
-export const DUMMY_HASH = bcrypt.hashSync('timing-equalizer-dummy', BCRYPT_COST);
+export const DUMMY_HASH =
+  '$2b$12$/BrXiJDeugxl760NsKVQNujuKDxRRaUH65v5C9f/2GHE0YOYl1sHm';
 
 /** Hashes a plaintext password for storage. */
 export async function hashPassword(plain: string): Promise<string> {

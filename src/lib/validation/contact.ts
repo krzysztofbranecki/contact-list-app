@@ -22,6 +22,8 @@ export interface CategoryRef {
 export const passwordSchema = z
   .string()
   .min(8, 'Hasło musi mieć co najmniej 8 znaków')
+  // bcrypt silently truncates input at 72 bytes — cap explicitly.
+  .max(72, 'Hasło może mieć maksymalnie 72 znaki')
   .regex(/[a-z]/, 'Hasło musi zawierać małą literę')
   .regex(/[A-Z]/, 'Hasło musi zawierać wielką literę')
   .regex(/\d/, 'Hasło musi zawierać cyfrę')
@@ -38,13 +40,28 @@ const phoneSchema = z
     return digits.length >= 7 && digits.length <= 15;
   }, 'Telefon musi zawierać od 7 do 15 cyfr');
 
-/** ISO date (yyyy-mm-dd from <input type="date">), strictly in the past. */
+/**
+ * ISO date (yyyy-mm-dd from <input type="date">), strictly in the past.
+ * Date.parse is deliberately avoided — it accepts loose formats ("2020",
+ * "March 5, 1990") that Postgres would reject or reinterpret. The past-date
+ * comparison is done on ISO strings, which is timezone-independent.
+ */
 const birthDateSchema = z
   .string()
   .min(1, 'Data urodzenia jest wymagana')
-  .refine((v) => !Number.isNaN(Date.parse(v)), 'Nieprawidłowa data')
+  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Nieprawidłowa data')
+  .refine((v) => {
+    const [y, m, d] = v.split('-').map(Number);
+    const date = new Date(Date.UTC(y, m - 1, d));
+    return (
+      y >= 1900 &&
+      date.getUTCFullYear() === y &&
+      date.getUTCMonth() === m - 1 &&
+      date.getUTCDate() === d
+    );
+  }, 'Nieprawidłowa data')
   .refine(
-    (v) => new Date(v) < new Date(new Date().toDateString()),
+    (v) => v < new Date().toISOString().slice(0, 10),
     'Data urodzenia musi być datą z przeszłości',
   );
 
@@ -60,9 +77,12 @@ const emptyToUndefined = (v: unknown) =>
 const contactBase = z.object({
   firstName: z.string().trim().min(1, 'Imię jest wymagane'),
   lastName: z.string().trim().min(1, 'Nazwisko jest wymagane'),
+  // Lowercased so the email is case-insensitively unique (mirrored by a
+  // unique index on lower(email) in the database).
   email: z
     .string()
     .trim()
+    .toLowerCase()
     .min(1, 'Adres e-mail jest wymagany')
     .email('Nieprawidłowy adres e-mail'),
   categoryId: z.preprocess(
@@ -80,11 +100,18 @@ const contactBase = z.object({
 
 /**
  * Cross-field subcategory rules, branched on the category code:
- * business → dictionary pick required, free text forbidden;
+ * business → dictionary pick required (and must exist in the dictionary),
+ *            free text forbidden;
  * other    → free text required, dictionary pick forbidden;
  * private  → both forbidden.
+ *
+ * The dictionary-membership check mirrors the composite FK in the database,
+ * turning a forged/stale subcategoryId into a field error instead of a 500.
  */
-function subcategoryRules(categories: CategoryRef[]) {
+function subcategoryRules(
+  categories: CategoryRef[],
+  businessSubcategoryIds: number[],
+) {
   return (
     data: {
       categoryId: number;
@@ -108,6 +135,12 @@ function subcategoryRules(categories: CategoryRef[]) {
           code: 'custom',
           path: ['subcategoryId'],
           message: 'Wybierz podkategorię ze słownika',
+        });
+      } else if (!businessSubcategoryIds.includes(data.subcategoryId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['subcategoryId'],
+          message: 'Nieprawidłowa podkategoria',
         });
       }
       if (data.subcategoryOther !== undefined) {
@@ -146,20 +179,26 @@ function subcategoryRules(categories: CategoryRef[]) {
 }
 
 /** Create: password required and must satisfy complexity. */
-export function contactCreateSchema(categories: CategoryRef[]) {
+export function contactCreateSchema(
+  categories: CategoryRef[],
+  businessSubcategoryIds: number[],
+) {
   return contactBase
     .extend({ password: passwordSchema })
-    .superRefine(subcategoryRules(categories));
+    .superRefine(subcategoryRules(categories, businessSubcategoryIds));
 }
 
 /**
  * Update: empty password = keep current credentials; a non-empty one must
  * satisfy the same complexity rules as on create.
  */
-export function contactUpdateSchema(categories: CategoryRef[]) {
+export function contactUpdateSchema(
+  categories: CategoryRef[],
+  businessSubcategoryIds: number[],
+) {
   return contactBase
     .extend({
       password: z.preprocess(emptyToUndefined, passwordSchema.optional()),
     })
-    .superRefine(subcategoryRules(categories));
+    .superRefine(subcategoryRules(categories, businessSubcategoryIds));
 }

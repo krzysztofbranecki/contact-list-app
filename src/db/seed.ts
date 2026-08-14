@@ -3,6 +3,7 @@ import bcrypt from 'bcryptjs';
 import { eq } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/postgres-js';
 import postgres from 'postgres';
+import { BCRYPT_COST } from '@/lib/auth/password';
 import { categories, contacts, subcategories } from './schema';
 
 /**
@@ -15,9 +16,6 @@ import { categories, contacts, subcategories } from './schema';
  * Starter login (documented in README): any seeded contact's email with the
  * password `Haslo123!`.
  */
-
-/** bcrypt cost factor — matches the application's auth layer. */
-const BCRYPT_COST = 12;
 
 /** Shared demo password for all seeded accounts. */
 const DEMO_PASSWORD = 'Haslo123!';

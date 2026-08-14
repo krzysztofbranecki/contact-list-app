@@ -47,8 +47,12 @@ Hasło wspólne: **`Haslo123!`**
 | `piotr.zielinski@example.com` | Inny / Sąsiad |
 
 Uwaga: kontakt = konto logowania — nowo dodany kontakt może się zalogować
-swoim e-mailem i hasłem; usunięcie kontaktu usuwa jego konto. Hasło może
-zmienić wyłącznie właściciel konta (edytując własny rekord po zalogowaniu).
+swoim e-mailem i hasłem; usunięcie kontaktu usuwa jego konto (i natychmiast
+unieważnia jego sesję). Hasło może zmienić wyłącznie właściciel konta
+(edytując własny rekord po zalogowaniu). Model autoryzacji jest celowo
+płaski — to współdzielona książka adresowa: każdy zalogowany może edytować
+i usuwać wszystkie kontakty; jedynym ograniczeniem per-rekord jest zmiana
+hasła.
 
 ## Pozostałe komendy
 

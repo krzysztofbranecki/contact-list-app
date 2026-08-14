@@ -411,8 +411,8 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Automated
 
-- [x] 5.1 Pliki istnieją: `ls docs/specyfikacja-techniczna.md README.md`
-- [x] 5.2 Build końcowy przechodzi: `npm run build`
+- [x] 5.1 Pliki istnieją: `ls docs/specyfikacja-techniczna.md README.md` — 335b595
+- [x] 5.2 Build końcowy przechodzi: `npm run build` — 335b595
 
 #### Manual
 

@@ -16,11 +16,17 @@ export interface SessionPayload {
   email: string;
 }
 
-/** HMAC key derived from the SESSION_SECRET env var. */
+/**
+ * HMAC key derived from the SESSION_SECRET env var. The whole guard chain is
+ * only as strong as this key, so a too-short (brute-forceable) secret is
+ * rejected outright instead of being silently accepted.
+ */
 function secretKey(): Uint8Array {
   const secret = process.env.SESSION_SECRET;
-  if (!secret) {
-    throw new Error('SESSION_SECRET env var is not set');
+  if (!secret || secret.length < 32) {
+    throw new Error(
+      'SESSION_SECRET env var must be set and at least 32 characters long',
+    );
   }
   return new TextEncoder().encode(secret);
 }
@@ -54,8 +60,15 @@ export async function verifySessionToken(
     const { payload } = await jwtVerify(token, secretKey(), {
       algorithms: ['HS256'],
     });
-    if (!payload.sub || typeof payload.email !== 'string') return null;
-    return { contactId: Number(payload.sub), email: payload.email };
+    const contactId = Number(payload.sub);
+    if (
+      !Number.isInteger(contactId) ||
+      contactId <= 0 ||
+      typeof payload.email !== 'string'
+    ) {
+      return null;
+    }
+    return { contactId, email: payload.email };
   } catch {
     // Invalid signature or expired token — treat as signed out.
     return null;

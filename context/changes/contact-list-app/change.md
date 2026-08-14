@@ -1,9 +1,9 @@
 ---
 change_id: contact-list-app
 title: Contact list app
-status: implementing
+status: impl_reviewed
 created: 2026-08-13
-updated: 2026-08-13
+updated: 2026-08-14
 archived_at: null
 ---
 

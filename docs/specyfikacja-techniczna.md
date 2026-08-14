@@ -29,7 +29,14 @@ Dokument pokrywa trzy wymagane punkty zadania:
 Spójność danych na poziomie bazy:
 
 - **złożony klucz obcy** `(category_id, subcategory_id)` → `subcategories(category_id, id)` gwarantuje, że wybrana podkategoria należy do wybranej kategorii;
-- **CHECK** `contacts_subcategory_exclusive` — kontakt nigdy nie ma jednocześnie podkategorii słownikowej i tekstowej.
+- **CHECK** `contacts_subcategory_exclusive` — kontakt nigdy nie ma jednocześnie podkategorii słownikowej i tekstowej;
+- **unikalny indeks** `contacts_email_lower_idx` na `lower(email)` (migracja `0001`) — unikalność e-maila niewrażliwa na wielkość liter, niezależnie od warstwy walidacji.
+
+Uwaga do migracji `0000`: wygenerowany przez drizzle-kit plik został ręcznie
+skorygowany — `CREATE UNIQUE INDEX` na `subcategories(category_id, id)` musi
+wykonać się PRZED dodaniem złożonego klucza obcego, który ten indeks
+referencjonuje (drizzle-kit emituje odwrotną kolejność). Ponowne generowanie
+migracji od zera wymagałoby powtórzenia tej korekty.
 
 #### `index.ts` — klient bazy (runtime)
 
@@ -111,10 +118,13 @@ po stronie serwera jest źródłem prawdy.
 | `contactUpdateSchema(categories)` | Hasło **opcjonalne** — puste pole oznacza „bez zmiany"; niepuste musi spełniać złożoność. |
 | `passwordSchema` | Współdzielona reguła złożoności hasła. |
 
-Reguły wspólne: e-mail (format), telefon (cyfry/spacje/`+`/`-`, 7–15 cyfr),
-data urodzenia w przeszłości. Reguły podkategorii per kategoria
-(`superRefine`): służbowa → wymagany wybór ze słownika; inna → wymagany
-dowolny tekst; prywatna → brak podkategorii.
+Reguły wspólne: e-mail (format, normalizacja do lowercase), telefon
+(cyfry/spacje/`+`/`-`, 7–15 cyfr), data urodzenia (ścisły format
+`RRRR-MM-DD`, realna data kalendarzowa, rok ≥ 1900, w przeszłości; hasło
+dodatkowo ograniczone do 72 znaków — limit bcrypta). Reguły podkategorii per
+kategoria (`superRefine`): służbowa → wymagany wybór ze słownika (id
+weryfikowane względem słownika); inna → wymagany dowolny tekst; prywatna →
+brak podkategorii.
 
 ### 1.4. Akcje serwerowe (`src/lib/actions/`)
 
@@ -161,11 +171,11 @@ Komponenty (`src/components/`):
 
 ### 1.6. Testy jednostkowe (`vitest.config.mts`, `src/**/*.test.ts`)
 
-30 testów bez połączenia z bazą i bez runtime'u Next.js:
+38 testów bez połączenia z bazą i bez runtime'u Next.js:
 
 - `src/lib/auth/password.test.ts` — roundtrip hash/verify, odrzucenie złego hasła, sól, `DUMMY_HASH`;
-- `src/lib/auth/session.test.ts` — roundtrip podpisu, odrzucenie tokenu przeterminowanego, sfałszowanego, z innym sekretem i uszkodzonego;
-- `src/lib/validation/contact.test.ts` — przypadki brzegowe złożoności hasła, reguły podkategorii dla wszystkich kategorii, semantyka pustego hasła w edycji, format e-maila/telefonu/daty.
+- `src/lib/auth/token.test.ts` — roundtrip podpisu, odrzucenie tokenu przeterminowanego, sfałszowanego, z innym sekretem i uszkodzonego;
+- `src/lib/validation/contact.test.ts` — przypadki brzegowe złożoności hasła (w tym limit 72 znaków bcrypt), reguły podkategorii dla wszystkich kategorii (w tym id spoza słownika), semantyka pustego hasła w edycji, normalizacja e-maila do lowercase, ścisły format daty urodzenia.
 
 ---
 

@@ -24,7 +24,8 @@ export interface LoginState {
 }
 
 const loginSchema = z.object({
-  email: z.string().trim().min(1),
+  // Lowercased to match the normalization applied when contacts are saved.
+  email: z.string().trim().toLowerCase().min(1),
   password: z.string().min(1),
 });
 
