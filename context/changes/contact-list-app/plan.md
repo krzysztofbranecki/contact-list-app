@@ -371,29 +371,29 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Automated
 
-- [x] 2.1 Build przechodzi: `npm run build`
-- [x] 2.2 Lint przechodzi: `npm run lint`
+- [x] 2.1 Build przechodzi: `npm run build` — ce33519
+- [x] 2.2 Lint przechodzi: `npm run lint` — ce33519
 
 #### Manual
 
-- [x] 2.3 Logowanie na konto z seedu działa i ustawia cookie httpOnly
-- [x] 2.4 Błędny email i błędne hasło dają ten sam generyczny komunikat
-- [x] 2.5 `/contacts/new` bez sesji przekierowuje na `/login`
-- [x] 2.6 Wylogowanie czyści sesję
+- [x] 2.3 Logowanie na konto z seedu działa i ustawia cookie httpOnly — ce33519
+- [x] 2.4 Błędny email i błędne hasło dają ten sam generyczny komunikat — ce33519
+- [x] 2.5 `/contacts/new` bez sesji przekierowuje na `/login` — ce33519
+- [x] 2.6 Wylogowanie czyści sesję — ce33519
 
 ### Phase 3: CRUD kontaktów
 
 #### Automated
 
-- [ ] 3.1 Build przechodzi: `npm run build`
-- [ ] 3.2 Lint przechodzi: `npm run lint`
+- [x] 3.1 Build przechodzi: `npm run build`
+- [x] 3.2 Lint przechodzi: `npm run lint`
 
 #### Manual
 
-- [ ] 3.3 Anonimowo: lista i szczegóły widoczne, hasło nigdzie nie występuje, brak przycisków mutacji
-- [ ] 3.4 Zalogowany: pełny CRUD działa, warunkowe pole podkategorii dla 3 kategorii
-- [ ] 3.5 Duplikat emaila / słabe hasło / niespójna podkategoria → polskie błędy przy polach
-- [ ] 3.6 Nowo dodany kontakt może się zalogować; edycja hasła zmienia poświadczenia
+- [x] 3.3 Anonimowo: lista i szczegóły widoczne, hasło nigdzie nie występuje, brak przycisków mutacji
+- [x] 3.4 Zalogowany: pełny CRUD działa, warunkowe pole podkategorii dla 3 kategorii
+- [x] 3.5 Duplikat emaila / słabe hasło / niespójna podkategoria → polskie błędy przy polach
+- [x] 3.6 Nowo dodany kontakt może się zalogować; edycja hasła zmienia poświadczenia
 
 ### Phase 4: Testy + hardening bezpieczeństwa
 

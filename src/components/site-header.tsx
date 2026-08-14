@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { logout } from '@/lib/actions/auth';
 import { getSession } from '@/lib/auth/session';
+import { Button, buttonStyles } from '@/components/ui/button';
 
 /**
  * Site header (server component): navigation plus the session indicator.
@@ -22,19 +23,13 @@ export async function SiteHeader() {
               {session.email}
             </span>
             <form action={logout}>
-              <button
-                type="submit"
-                className="rounded border border-zinc-300 px-3 py-1 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-              >
+              <Button type="submit" variant="secondary">
                 Wyloguj
-              </button>
+              </Button>
             </form>
           </>
         ) : (
-          <Link
-            href="/login"
-            className="rounded border border-zinc-300 px-3 py-1 hover:bg-zinc-100 dark:border-zinc-700 dark:hover:bg-zinc-800"
-          >
+          <Link href="/login" className={buttonStyles('secondary')}>
             Zaloguj się
           </Link>
         )}
