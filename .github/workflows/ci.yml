@@ -34,6 +34,9 @@ jobs:
       - name: Lint
         run: yarn lint
 
+      - name: Dependency rules (dependency-cruiser)
+        run: yarn deps:check
+
       - name: Generate Next.js route types
         run: yarn next typegen
 
