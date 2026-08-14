@@ -12,6 +12,11 @@ updates:
         update-types:
           - minor
           - patch
+    ignore:
+      # Keep @types/node on the same major as the runtime (Vercel + .nvmrc
+      # pin Node 24) — don't propose majors beyond it.
+      - dependency-name: "@types/node"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
