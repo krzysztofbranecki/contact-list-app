@@ -17,6 +17,11 @@ updates:
       # pin Node 24) — don't propose majors beyond it.
       - dependency-name: "@types/node"
         update-types: ["version-update:semver-major"]
+      # ESLint 10 removed context.getFilename(); eslint-plugin-react (via
+      # eslint-config-next) still calls it and has no ESLint-10-compatible
+      # release. Drop this once the plugin ecosystem catches up.
+      - dependency-name: "eslint"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: github-actions
     directory: /
