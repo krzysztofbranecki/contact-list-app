@@ -416,5 +416,5 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Manual
 
-- [x] 5.3 Specyfikacja pokrywa 3 wymagane punkty zadania i zgadza się z kodem
-- [x] 5.4 Czysty checkout + README wystarczają do uruchomienia
+- [x] 5.3 Specyfikacja pokrywa 3 wymagane punkty zadania i zgadza się z kodem — 98b25f8
+- [x] 5.4 Czysty checkout + README wystarczają do uruchomienia — 98b25f8
