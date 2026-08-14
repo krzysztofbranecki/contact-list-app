@@ -19,3 +19,4 @@ updates:
       interval: weekly
       day: monday
     open-pull-requests-limit: 3
+# Touching this file forces an immediate Dependabot check.
