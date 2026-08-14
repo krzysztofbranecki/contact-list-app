@@ -34,6 +34,12 @@ interface ContactFormProps {
   /** Dictionary subcategories of the 'business' category. */
   businessSubcategories: SubcategoryOption[];
   mode: 'create' | 'edit';
+  /**
+   * Edit only: whether the signed-in user owns this record. Only the owner
+   * may change the password — for other records the field is hidden (the
+   * server action enforces the same rule).
+   */
+  canChangePassword?: boolean;
   defaults?: {
     firstName: string;
     lastName: string;
@@ -53,6 +59,7 @@ export function ContactForm({
   categories,
   businessSubcategories,
   mode,
+  canChangePassword = true,
   defaults,
 }: ContactFormProps) {
   const [state, formAction, pending] = useActionState(action, initialState);
@@ -104,18 +111,22 @@ export function ContactForm({
         />
       </Field>
 
-      <Field
-        label={mode === 'create' ? 'Hasło' : 'Nowe hasło (puste = bez zmiany)'}
-        errors={state.errors.password}
-      >
-        {/* Never prefilled — the current password hash never reaches the client. */}
-        <Input
-          type="password"
-          name="password"
-          required={mode === 'create'}
-          autoComplete="new-password"
-        />
-      </Field>
+      {(mode === 'create' || canChangePassword) && (
+        <Field
+          label={
+            mode === 'create' ? 'Hasło' : 'Nowe hasło (puste = bez zmiany)'
+          }
+          errors={state.errors.password}
+        >
+          {/* Never prefilled — the current password hash never reaches the client. */}
+          <Input
+            type="password"
+            name="password"
+            required={mode === 'create'}
+            autoComplete="new-password"
+          />
+        </Field>
+      )}
 
       <Field label="Kategoria" errors={state.errors.categoryId}>
         <Select

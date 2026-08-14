@@ -137,13 +137,18 @@ export async function createContact(
 /**
  * Updates a contact. An empty password field keeps the current credentials;
  * a filled one rotates them (the contact signs in with the new password).
+ *
+ * Password changes are restricted to the account owner: only the signed-in
+ * contact editing their own record may set a new password. The edit form
+ * hides the field for other records, but this server-side check is the
+ * actual boundary.
  */
 export async function editContact(
   id: number,
   _prev: ContactFormState,
   formData: FormData,
 ): Promise<ContactFormState> {
-  await requireAuth();
+  const session = await requireAuth();
 
   const categories = await listCategories();
   const parsed = contactUpdateSchema(categories).safeParse(formValues(formData));
@@ -156,6 +161,14 @@ export async function editContact(
   }
 
   const { password, ...fields } = parsed.data;
+
+  if (password !== undefined && session.contactId !== id) {
+    return {
+      errors: { password: ['Hasło może zmienić tylko właściciel konta'] },
+      values: echoValues(formData),
+      serial: Date.now(),
+    };
+  }
   const values: ContactWriteValues = {
     ...fields,
     subcategoryId: fields.subcategoryId ?? null,

@@ -12,7 +12,7 @@ import { ContactForm } from '@/components/contact-form';
 export default async function EditContactPage({
   params,
 }: PageProps<'/contacts/[id]/edit'>) {
-  await requireAuth();
+  const session = await requireAuth();
 
   const { id } = await params;
   const contactId = Number(id);
@@ -37,6 +37,7 @@ export default async function EditContactPage({
         action={editContact.bind(null, contact.id)}
         categories={categories}
         businessSubcategories={businessSubcategories}
+        canChangePassword={session.contactId === contact.id}
         defaults={{
           firstName: contact.firstName,
           lastName: contact.lastName,

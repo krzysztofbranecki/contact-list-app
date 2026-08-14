@@ -1,4 +1,6 @@
+import { cache } from 'react';
 import { cookies } from 'next/headers';
+import { contactExists } from '@/db/queries';
 import { SESSION_COOKIE } from './constants';
 import {
   SESSION_TTL_SECONDS,
@@ -9,8 +11,9 @@ import {
 
 /**
  * Session management: a signed JWT (see token.ts) stored in an httpOnly
- * cookie. Stateless by design — no session table; the signature plus a 24h
- * expiry are the source of truth.
+ * cookie. No session table — but a token is only honored while its contact
+ * still exists in the database, so deleting a contact (= deleting the
+ * account) invalidates its live sessions on the next request.
  */
 
 /** Authenticated session data exposed to the app. */
@@ -36,14 +39,23 @@ export async function createSession(
 
 /**
  * Reads and verifies the session cookie. Returns null for missing, expired,
- * or tampered tokens — all three mean "anonymous request".
+ * or tampered tokens AND for tokens of contacts that no longer exist — all
+ * of these mean "anonymous request". Wrapped in React cache() so layout and
+ * page sharing a request pay for the existence check once.
  */
-export async function getSession(): Promise<Session | null> {
+export const getSession = cache(async (): Promise<Session | null> => {
   const cookieStore = await cookies();
   const token = cookieStore.get(SESSION_COOKIE)?.value;
   if (!token) return null;
-  return verifySessionToken(token);
-}
+
+  const payload = await verifySessionToken(token);
+  if (!payload) return null;
+
+  // Ghost-session guard: the account may have been deleted after sign-in.
+  if (!(await contactExists(payload.contactId))) return null;
+
+  return payload;
+});
 
 /** Clears the session cookie (logout). */
 export async function destroySession(): Promise<void> {

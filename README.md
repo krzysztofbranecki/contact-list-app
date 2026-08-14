@@ -1,36 +1,60 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Lista kontaktów
 
-## Getting Started
+Aplikacja webowa (zadanie rekrutacyjne Next.js Full Stack Developer):
+publicznie przeglądalna lista kontaktów, w której rekord kontaktu jest
+jednocześnie kontem logowania. Dodawanie, edycja i usuwanie wymagają
+zalogowania. Stack: **Next.js 16 (App Router, Server Actions) + PostgreSQL
+(Supabase) + Drizzle ORM**.
 
-First, run the development server:
+📄 Pełna dokumentacja: [`docs/specyfikacja-techniczna.md`](docs/specyfikacja-techniczna.md)
+(opis modułów i funkcji, biblioteki, szczegóły uruchomienia).
+
+## Wymagania
+
+- Node.js ≥ 20 (z Corepack — projekt używa Yarn 4)
+- darmowy projekt PostgreSQL w [Supabase](https://supabase.com)
+
+## Uruchomienie krok po kroku
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+corepack enable
+yarn install
+cp .env.example .env
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Uzupełnij `.env` (opisy w `.env.example`):
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `DATABASE_URL` — Supabase → Project Settings → Database → Connection string → **Transaction mode** (port 6543)
+- `DIRECT_URL` — jak wyżej, **Session mode** (port 5432)
+- `SESSION_SECRET` — losowy ciąg ≥ 32 znaki (`openssl rand -base64 32`)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Następnie baza i start:
 
-## Learn More
+```bash
+yarn db:migrate   # migracje schematu
+yarn db:seed      # słowniki + konta startowe (idempotentny)
+yarn dev          # http://localhost:3000
+```
 
-To learn more about Next.js, take a look at the following resources:
+## Konta startowe (seed)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Hasło wspólne: **`Haslo123!`**
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| E-mail | Kategoria |
+| --- | --- |
+| `jan.kowalski@example.com` | Służbowy / Szef |
+| `anna.nowak@example.com` | Prywatny |
+| `piotr.zielinski@example.com` | Inny / Sąsiad |
 
-## Deploy on Vercel
+Uwaga: kontakt = konto logowania — nowo dodany kontakt może się zalogować
+swoim e-mailem i hasłem; usunięcie kontaktu usuwa jego konto. Hasło może
+zmienić wyłącznie właściciel konta (edytując własny rekord po zalogowaniu).
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Pozostałe komendy
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```bash
+yarn test    # testy jednostkowe (Vitest)
+yarn lint    # ESLint
+yarn build   # kompilacja produkcyjna
+yarn start   # serwer produkcyjny (po build)
+```

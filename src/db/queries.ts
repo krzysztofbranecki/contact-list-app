@@ -75,6 +75,20 @@ export async function getContactWithHashByEmail(email: string) {
   return rows[0] ?? null;
 }
 
+/**
+ * Existence check used by session validation: a JWT is only honored while
+ * its contact still exists, so deleting a contact kills its live sessions
+ * on the next request.
+ */
+export async function contactExists(id: number): Promise<boolean> {
+  const rows = await db
+    .select({ id: contacts.id })
+    .from(contacts)
+    .where(eq(contacts.id, id))
+    .limit(1);
+  return rows.length > 0;
+}
+
 /** Category dictionary, in seed order. */
 export async function listCategories() {
   return db.select().from(categories).orderBy(asc(categories.id));

@@ -399,22 +399,22 @@ schematu; seed idempotentny, bezpieczny do wielokrotnego uruchomienia.
 
 #### Automated
 
-- [x] 4.1 Testy przechodzą: `npm test`
-- [x] 4.2 Build i lint przechodzą: `npm run build && npm run lint`
+- [x] 4.1 Testy przechodzą: `npm test` — 23316a4
+- [x] 4.2 Build i lint przechodzą: `npm run build && npm run lint` — 23316a4
 
 #### Manual
 
-- [ ] 4.3 Checklist bezpieczeństwa przejrzany punkt po punkcie
-- [ ] 4.4 Komentarze na wszystkich modułach `src/lib` i `src/db`
+- [x] 4.3 Checklist bezpieczeństwa przejrzany punkt po punkcie — 23316a4
+- [x] 4.4 Komentarze na wszystkich modułach `src/lib` i `src/db` — 23316a4
 
 ### Phase 5: Dokumentacja
 
 #### Automated
 
-- [ ] 5.1 Pliki istnieją: `ls docs/specyfikacja-techniczna.md README.md`
-- [ ] 5.2 Build końcowy przechodzi: `npm run build`
+- [x] 5.1 Pliki istnieją: `ls docs/specyfikacja-techniczna.md README.md`
+- [x] 5.2 Build końcowy przechodzi: `npm run build`
 
 #### Manual
 
-- [ ] 5.3 Specyfikacja pokrywa 3 wymagane punkty zadania i zgadza się z kodem
-- [ ] 5.4 Czysty checkout + README wystarczają do uruchomienia
+- [x] 5.3 Specyfikacja pokrywa 3 wymagane punkty zadania i zgadza się z kodem
+- [x] 5.4 Czysty checkout + README wystarczają do uruchomienia
